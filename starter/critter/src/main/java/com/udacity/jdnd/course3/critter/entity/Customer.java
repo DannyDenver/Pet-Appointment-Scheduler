@@ -1,5 +1,7 @@
-package com.udacity.jdnd.course3.critter.user;
+package com.udacity.jdnd.course3.critter.entity;
 
+
+import com.udacity.jdnd.course3.critter.pet.PetDTO;
 import org.hibernate.annotations.Nationalized;
 
 import javax.persistence.*;
@@ -9,17 +11,21 @@ import java.util.List;
  * Represents the form that customer request and response data takes. Does not map
  * to the database directly.
  */
-public class CustomerDTO {
-
+@Entity
+public class Customer {
+    @Id
+    @GeneratedValue
     private long id;
 
+    @Nationalized
     private String name;
 
     private String phoneNumber;
 
     private String notes;
 
-    private List<Long> petIds;
+    @OneToMany(fetch= FetchType.LAZY, mappedBy="customer", cascade = CascadeType.ALL)
+    private List<Pet> pets;
 
     public long getId() {
         return id;
@@ -53,11 +59,12 @@ public class CustomerDTO {
         this.notes = notes;
     }
 
-    public List<Long> getPetIds() {
-        return petIds;
+    public List<Pet> getPets() {
+        return pets;
     }
 
-    public void setPetIds(List<Long> petIds) {
-        this.petIds = petIds;
+    public void setPets(List<Pet> pets) {
+        this.pets = pets;
     }
 }
+
