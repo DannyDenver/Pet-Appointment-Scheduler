@@ -1,10 +1,10 @@
-package com.udacity.jdnd.course3.critter.entity;
+package com.udacity.jdnd.course3.critter.pet;
 
 import com.udacity.jdnd.course3.critter.pet.PetType;
+import com.udacity.jdnd.course3.critter.user.Customer;
 import org.hibernate.annotations.Nationalized;
 
 import javax.persistence.*;
-import java.security.acl.Owner;
 import java.time.LocalDate;
 
 @Entity
