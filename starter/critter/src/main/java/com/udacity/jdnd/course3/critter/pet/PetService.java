@@ -17,6 +17,8 @@ public class PetService {
 
     PetRepository petRepository;
 
+    static final Type petDtoListType = new TypeToken<List<PetDTO>>(){}.getType();
+
     public PetService(PetRepository petRepository) {
         this.petRepository = petRepository;
     }
@@ -45,8 +47,13 @@ public class PetService {
 
     public List<PetDTO> getPets() {
         List<Pet> pets = petRepository.findAll();
-        Type listType = new TypeToken<List<PetDTO>>(){}.getType();
 
-        return mapper.map(pets, listType);
+        return mapper.map(pets, petDtoListType);
+    }
+
+    public List<PetDTO> getPetsByOwner(Long ownerId) {
+        List<Pet> pets = petRepository.getPetsByOwnerId(ownerId);
+
+        return mapper.map(pets, petDtoListType);
     }
 }
