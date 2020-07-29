@@ -11,35 +11,13 @@ import java.time.DayOfWeek;
 import java.util.Set;
 
 @Entity
-public class Employee {
-    @Id
-    @GeneratedValue
-    private long id;
-
-    @Nationalized
-    private String name;
+public class Employee extends User{
 
     @ElementCollection
     private Set<EmployeeSkill> skills;
 
     @ElementCollection
     private Set<DayOfWeek> daysAvailable;
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public Set<EmployeeSkill> getSkills() {
         return skills;
