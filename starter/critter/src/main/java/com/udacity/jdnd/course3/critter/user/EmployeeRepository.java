@@ -17,6 +17,5 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     @Query("update Employee e set e.daysAvailable = :daysAvailable where e.id = :employeeId")
     void setAvailability(Set<DayOfWeek> daysAvailable, Long employeeId);
 
-//    @Query(value = "select * from Employee e where :employeeSkills in e.skills and :day in e.daysAvailable", nativeQuery = true)
-    List<Employee> getEmployeesBySkillsInAndDaysAvailable(Set<EmployeeSkill> employeeSkills, DayOfWeek day);
+    List<Employee> getEmployeeByDaysAvailable(DayOfWeek day);
 }

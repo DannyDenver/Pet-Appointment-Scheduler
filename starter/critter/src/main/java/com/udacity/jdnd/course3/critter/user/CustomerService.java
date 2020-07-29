@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -18,8 +19,6 @@ public class CustomerService {
     ModelMapper mapper;
 
     CustomerRepository customerRepository;
-
-    static final Type customerDtoListType = new TypeToken<List<CustomerDTO>>(){}.getType();
 
     public CustomerService(CustomerRepository customerRepository) {
         this.customerRepository = customerRepository;
@@ -37,13 +36,34 @@ public class CustomerService {
 
     public List<CustomerDTO> getAllCustomers() {
         List<Customer> customers = customerRepository.findAll();
-        return mapper.map(customers, customerDtoListType);
+        return convertEntitiesToCustomerDTOs(customers);
     }
 
     public CustomerDTO getOwnerByPet(Long petId) {
         Customer customer = customerRepository.getCustomerByPetsId(petId);
+        return convertEntityToCustomerDTO(customer);
+    }
+
+    private static List<CustomerDTO> convertEntitiesToCustomerDTOs(List<Customer> customers) {
+        List<CustomerDTO> customerDTOS = new ArrayList<>();
+
+        customers.forEach(customer -> {
+            customerDTOS.add(convertEntityToCustomerDTO(customer));
+        });
+
+        return customerDTOS;
+    }
+
+    private static CustomerDTO convertEntityToCustomerDTO(Customer customer) {
         CustomerDTO customerDTO = new CustomerDTO();
         BeanUtils.copyProperties(customer, customerDTO);
+
+        if(customer.getPets() != null && customer.getPets().size() > 0) {
+            List<Long> petIds = new ArrayList<>();
+            customer.getPets().forEach(pet -> petIds.add(pet.getId()));
+            customerDTO.setPetIds(petIds);
+        };
+
         return customerDTO;
     }
 }

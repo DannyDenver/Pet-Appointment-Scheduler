@@ -1,15 +1,13 @@
 package com.udacity.jdnd.course3.critter.schedule;
 
-import com.fasterxml.jackson.databind.util.BeanUtil;
-import com.udacity.jdnd.course3.critter.pet.PetDTO;
+import com.udacity.jdnd.course3.critter.pet.Pet;
+import com.udacity.jdnd.course3.critter.user.Employee;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -19,44 +17,89 @@ public class ScheduleService {
 
     ScheduleRepository scheduleRepository;
 
-    private static final Type scheduleDtoListType = new TypeToken<List<ScheduleDTO>>(){}.getType();
-
     ScheduleService(ScheduleRepository repository) {
         this.scheduleRepository = repository;
     }
 
     public List<ScheduleDTO> getAllSchedules() {
         List<Schedule> schedules = scheduleRepository.findAll();
-
-        return mapper.map(schedules, scheduleDtoListType);
+        return convertEntitiesToScheduleDTOs(schedules);
     }
 
     public ScheduleDTO saveSchedule(ScheduleDTO scheduleDto) {
-        Schedule schedule = new Schedule();
-        BeanUtils.copyProperties(scheduleDto, schedule);
-
-        schedule = scheduleRepository.save(schedule);
-
-        BeanUtils.copyProperties(schedule, scheduleDto);
-
-        return scheduleDto;
+        Schedule schedule = scheduleRepository.save(convertScheduleDtoToEntity(scheduleDto));
+        return convertEntityToScheduleDTO(schedule);
     }
 
     public List<ScheduleDTO> getSchedulesForPet(Long petId) {
         List<Schedule> schedules = scheduleRepository.getSchedulesByPetsId(petId);
-
-        return mapper.map(schedules, scheduleDtoListType);
+        return convertEntitiesToScheduleDTOs(schedules);
     }
 
     public List<ScheduleDTO> getSchedulesForEmployee(Long employeeId) {
         List<Schedule> schedules = scheduleRepository.getSchedulesByEmployeesId(employeeId);
-
-        return mapper.map(schedules, scheduleDtoListType);
+        return convertEntitiesToScheduleDTOs(schedules);
     }
 
     public List<ScheduleDTO> getScheduleByCustomer(Long customerId) {
         List<Schedule> schedules = scheduleRepository.getSchedulesByPetsOwnerId(customerId);
+        return convertEntitiesToScheduleDTOs(schedules);
+    }
 
-        return mapper.map(schedules, scheduleDtoListType);
+    private static Schedule convertScheduleDtoToEntity(ScheduleDTO scheduleDTO) {
+        Schedule schedule = new Schedule();
+        BeanUtils.copyProperties(scheduleDTO, schedule);
+
+        if(scheduleDTO.getEmployeeIds() != null && scheduleDTO.getEmployeeIds().size() > 0) {
+            List<Employee> employees = new ArrayList<>();
+            scheduleDTO.getEmployeeIds().forEach(id -> {
+                Employee employee = new Employee();
+                employee.setId(id);
+                employees.add(employee);
+            });
+
+            schedule.setEmployees(employees);
+        }
+
+        if(scheduleDTO.getPetIds() != null && scheduleDTO.getPetIds().size() > 0) {
+            List<Pet> pets = new ArrayList<>();
+            scheduleDTO.getPetIds().forEach(id -> {
+                Pet pet = new Pet();
+                pet.setId(id);
+                pets.add(pet);
+            });
+            schedule.setPets(pets);
+        }
+
+        return schedule;
+    }
+
+    private static List<ScheduleDTO> convertEntitiesToScheduleDTOs(List<Schedule> schedules) {
+        List<ScheduleDTO> scheduleDTOS = new ArrayList<>();
+        schedules.forEach(schedule -> scheduleDTOS.add(convertEntityToScheduleDTO(schedule)));
+
+        return scheduleDTOS;
+    }
+
+    private static ScheduleDTO convertEntityToScheduleDTO(Schedule schedule) {
+        ScheduleDTO scheduleDTO = new ScheduleDTO();
+
+        List<Long> petIds = new ArrayList<>();
+        List<Long> employeeIds = new ArrayList<>();
+
+        if(schedule.getPets() != null) {
+            schedule.getPets().forEach(pet -> petIds.add(pet.getId()));
+        }
+
+        if(schedule.getEmployees() != null) {
+            schedule.getEmployees().forEach(employee -> employeeIds.add(employee.getId()));
+        }
+
+        scheduleDTO.setEmployeeIds(employeeIds);
+        scheduleDTO.setPetIds(petIds);
+        scheduleDTO.setActivities(schedule.getActivities());
+        scheduleDTO.setDate(schedule.getDate());
+
+        return scheduleDTO;
     }
 }

@@ -26,11 +26,11 @@ public class Schedule {
     @ElementCollection
     private Set<EmployeeSkill> activities;
 
-    public List<Employee> getEmployeeIds() {
+    public List<Employee> getEmployees() {
         return employees;
     }
 
-    public void setEmployeeIds(List<Employee> employees) {
+    public void setEmployees(List<Employee> employees) {
         this.employees = employees;
     }
 

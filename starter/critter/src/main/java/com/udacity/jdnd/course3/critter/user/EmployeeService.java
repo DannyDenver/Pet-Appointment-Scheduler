@@ -20,29 +20,19 @@ public class EmployeeService {
 
     EmployeeRepository employeeRepository;
 
-    static final Type employeeDtoListType = new TypeToken<List<EmployeeDTO>>(){}.getType();
-
     public EmployeeService(EmployeeRepository employeeRepository) {
         this.employeeRepository = employeeRepository;
     }
 
     public EmployeeDTO saveEmployee(EmployeeDTO employeeDTO) {
-        Employee employee = new Employee();
-        BeanUtils.copyProperties(employeeDTO, employee);
-
-        employee = employeeRepository.save(employee);
-        BeanUtils.copyProperties(employee, employeeDTO);
-
-        return employeeDTO;
+        Employee employee = employeeRepository.save(convertEmployeeDtoToEntity(employeeDTO));
+        return convertEntityToEmployeeDto(employee);
     }
 
     public EmployeeDTO getEmployee(Long id) {
         Employee employee = employeeRepository.getOne(id);
 
-        EmployeeDTO employeeDTO = new EmployeeDTO();
-        BeanUtils.copyProperties(employee, employeeDTO);
-
-        return employeeDTO;
+        return convertEntityToEmployeeDto(employee);
     }
 
     public void setAvailability(Set<DayOfWeek> daysAvailable, Long employeeId) {
@@ -53,7 +43,37 @@ public class EmployeeService {
     }
 
     public List<EmployeeDTO> findEmployeesForService(EmployeeRequestDTO employeeRequestDTO) {
-        List<Employee> employees = employeeRepository.getEmployeesBySkillsInAndDaysAvailable(employeeRequestDTO.getSkills(), employeeRequestDTO.getDate().getDayOfWeek());
-        return mapper.map(employees, employeeDtoListType);
+        List<Employee> employees = employeeRepository.getEmployeeByDaysAvailable(employeeRequestDTO.getDate().getDayOfWeek());
+
+        List<Employee> availableEmployees = new ArrayList<Employee>();
+        for(Employee employee: employees) {
+            if(employee.getSkills().containsAll(employeeRequestDTO.getSkills())) {
+                availableEmployees.add(employee);
+            }
+        }
+
+        return convertEntitiesToEmployeeDTOs(availableEmployees);
+    }
+
+    private static List<EmployeeDTO> convertEntitiesToEmployeeDTOs(List<Employee> employees) {
+        List<EmployeeDTO> employeeDTOs = new ArrayList<>();
+
+        employees.forEach(employee -> {
+            employeeDTOs.add(convertEntityToEmployeeDto(employee));
+        });
+
+        return employeeDTOs;
+    }
+
+    private static Employee convertEmployeeDtoToEntity(EmployeeDTO employeeDto) {
+        Employee employee = new Employee();
+        BeanUtils.copyProperties(employeeDto, employee);
+        return employee;
+    }
+
+    private static EmployeeDTO convertEntityToEmployeeDto(Employee employee) {
+        EmployeeDTO employeeDTO = new EmployeeDTO();
+        BeanUtils.copyProperties(employee, employeeDTO);
+        return employeeDTO;
     }
 }
