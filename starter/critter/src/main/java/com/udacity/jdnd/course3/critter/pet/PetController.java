@@ -1,8 +1,11 @@
 package com.udacity.jdnd.course3.critter.pet;
 
+import com.udacity.jdnd.course3.critter.user.Customer;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,21 +23,52 @@ public class PetController {
 
     @PostMapping
     public PetDTO savePet(@RequestBody PetDTO petDTO) {
-        return petService.savePet(petDTO);
+        Pet pet = convertPetDtoToEntity(petDTO);
+
+        return convertEntityToPetDto(petService.savePet(pet));
     }
 
     @GetMapping("/{petId}")
     public PetDTO getPet(@PathVariable long petId) {
-        return petService.getPet(petId);
+        return convertEntityToPetDto(petService.getPet(petId));
     }
 
     @GetMapping
     public List<PetDTO> getPets(){
-        return petService.getPets();
+        return convertEntitiesToPetDtos(petService.getPets());
     }
 
     @GetMapping("/owner/{ownerId}")
     public List<PetDTO> getPetsByOwner(@PathVariable long ownerId) {
-        return petService.getPetsByOwner(ownerId);
+        return convertEntitiesToPetDtos(petService.getPetsByOwner(ownerId));
+    }
+
+    private static List<PetDTO> convertEntitiesToPetDtos(List<Pet> pets) {
+        List<PetDTO> petDtos = new ArrayList<PetDTO>();
+        pets.forEach(pet -> petDtos.add(convertEntityToPetDto(pet)));
+
+        return petDtos;
+    }
+
+    private Pet convertPetDtoToEntity(PetDTO petDto) {
+        Pet pet = new Pet();
+        BeanUtils.copyProperties(petDto, pet);
+
+        if(petDto.getOwnerId() > 0) {
+            Customer customer = new Customer();
+            customer.setId(petDto.getOwnerId());
+            pet.setCustomer(customer);
+        }
+
+        return pet;
+    }
+
+    private static PetDTO convertEntityToPetDto(Pet pet) {
+        PetDTO petDto = new PetDTO();
+        BeanUtils.copyProperties(pet, petDto);
+
+        petDto.setOwnerId(pet.getCustomer().getId());
+
+        return petDto;
     }
 }

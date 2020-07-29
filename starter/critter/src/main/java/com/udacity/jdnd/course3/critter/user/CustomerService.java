@@ -1,18 +1,16 @@
 package com.udacity.jdnd.course3.critter.user;
 
 import com.udacity.jdnd.course3.critter.pet.Pet;
-import com.udacity.jdnd.course3.critter.pet.PetDTO;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Type;
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
+@Transactional
 @Service
 public class CustomerService {
 
@@ -25,24 +23,16 @@ public class CustomerService {
         this.customerRepository = customerRepository;
     }
 
-    public CustomerDTO saveCustomer(CustomerDTO customerDTO) {
-        Customer customer = new Customer();
-        BeanUtils.copyProperties(customerDTO, customer);
-
-        customer = customerRepository.save(customer);
-        BeanUtils.copyProperties(customer, customerDTO);
-
-        return customerDTO;
+    public Customer saveCustomer(Customer customer) {
+        return customerRepository.save(customer);
     }
 
-    public List<CustomerDTO> getAllCustomers() {
-        List<Customer> customers = customerRepository.findAll();
-        return convertEntitiesToCustomerDTOs(customers);
+    public List<Customer> getAllCustomers() {
+        return customerRepository.findAll();
     }
 
-    public CustomerDTO getOwnerByPet(Long petId) {
-        Customer customer = customerRepository.getCustomerByPetsId(petId);
-        return convertEntityToCustomerDTO(customer);
+    public Customer getOwnerByPet(Long petId) {
+        return customerRepository.getCustomerByPetsId(petId);
     }
 
     public Customer getCustomerById(Long ownerId) {
@@ -57,28 +47,5 @@ public class CustomerService {
         pets.add(pet);
         customer.setPets(pets);
         customerRepository.save(customer);
-    }
-
-    private static List<CustomerDTO> convertEntitiesToCustomerDTOs(List<Customer> customers) {
-        List<CustomerDTO> customerDTOS = new ArrayList<>();
-
-        customers.forEach(customer -> {
-            customerDTOS.add(convertEntityToCustomerDTO(customer));
-        });
-
-        return customerDTOS;
-    }
-
-    private static CustomerDTO convertEntityToCustomerDTO(Customer customer) {
-        CustomerDTO customerDTO = new CustomerDTO();
-        BeanUtils.copyProperties(customer, customerDTO);
-
-        if(customer.getPets() != null && customer.getPets().size() > 0) {
-            List<Long> petIds = new ArrayList<>();
-            customer.getPets().forEach(pet -> petIds.add(pet.getId()));
-            customerDTO.setPetIds(petIds);
-        };
-
-        return customerDTO;
     }
 }
