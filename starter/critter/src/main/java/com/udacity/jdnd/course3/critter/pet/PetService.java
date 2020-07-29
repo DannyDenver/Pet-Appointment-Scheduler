@@ -1,7 +1,7 @@
 package com.udacity.jdnd.course3.critter.pet;
 
 import com.udacity.jdnd.course3.critter.user.Customer;
-import com.udacity.jdnd.course3.critter.user.CustomerRepository;
+import com.udacity.jdnd.course3.critter.user.CustomerService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PetService {
@@ -17,14 +18,21 @@ public class PetService {
     ModelMapper mapper;
 
     PetRepository petRepository;
+    CustomerService customerService;
 
-    public PetService(PetRepository petRepository, CustomerRepository customerRepository) {
-        this.petRepository = petRepository; }
+    public PetService(PetRepository petRepository, CustomerService customerService) {
+        this.petRepository = petRepository;
+        this.customerService = customerService;
+    }
 
     public PetDTO savePet(PetDTO petDTO) {
         Pet pet = convertPetDtoToEntity(petDTO);
 
         pet = petRepository.save(pet);
+
+        if(petDTO.getOwnerId() > 0) {
+            customerService.addPetToOwner(pet, pet.getCustomer());
+        };
 
         return convertEntityToPetDto(pet);
     }
@@ -41,7 +49,7 @@ public class PetService {
     }
 
     public List<PetDTO> getPetsByOwner(Long ownerId) {
-        List<Pet> pets = petRepository.getPetsByOwnerId(ownerId);
+        List<Pet> pets = petRepository.getPetsByCustomerId(ownerId);
 
         return convertEntitiesToPetDtos(pets);
     }
@@ -53,12 +61,14 @@ public class PetService {
         return petDtos;
     }
 
-    private static Pet convertPetDtoToEntity(PetDTO petDto) {
+    private Pet convertPetDtoToEntity(PetDTO petDto) {
         Pet pet = new Pet();
         BeanUtils.copyProperties(petDto, pet);
-        Customer customer = new Customer();
-        customer.setId(petDto.getOwnerId());
-        pet.setOwner(customer);
+
+        if(petDto.getOwnerId() > 0) {
+            Customer customer = customerService.getCustomerById(petDto.getOwnerId());
+            pet.setCustomer(customer);
+        }
 
         return pet;
     }
@@ -67,7 +77,7 @@ public class PetService {
         PetDTO petDto = new PetDTO();
         BeanUtils.copyProperties(pet, petDto);
 
-        petDto.setOwnerId(pet.getOwner().getId());
+        petDto.setOwnerId(pet.getCustomer().getId());
 
         return petDto;
     }

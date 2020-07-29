@@ -12,5 +12,5 @@ public interface PetRepository extends JpaRepository<Pet, Long> {
 
     Pet getPetById(Long id);
 
-    List<Pet> getPetsByOwnerId(Long id);
+    List<Pet> getPetsByCustomerId(Long id);
 }

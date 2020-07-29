@@ -37,12 +37,12 @@ public class ScheduleService {
     }
 
     public List<ScheduleDTO> getSchedulesForEmployee(Long employeeId) {
-        List<Schedule> schedules = scheduleRepository.getSchedulesByEmployeesId(employeeId);
+        List<Schedule> schedules = scheduleRepository.findAllByEmployees_Id(employeeId);
         return convertEntitiesToScheduleDTOs(schedules);
     }
 
     public List<ScheduleDTO> getScheduleByCustomer(Long customerId) {
-        List<Schedule> schedules = scheduleRepository.getSchedulesByPetsOwnerId(customerId);
+        List<Schedule> schedules = scheduleRepository.getSchedulesByPetsCustomerId(customerId);
         return convertEntitiesToScheduleDTOs(schedules);
     }
 

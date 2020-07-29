@@ -24,7 +24,10 @@ public class Customer {
 
     private String notes;
 
-    @OneToMany(fetch= FetchType.LAZY, mappedBy="owner", cascade = CascadeType.ALL)
+    @OneToMany(
+            mappedBy = "customer",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
     private List<Pet> pets;
 
     public long getId() {

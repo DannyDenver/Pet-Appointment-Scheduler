@@ -1,5 +1,6 @@
 package com.udacity.jdnd.course3.critter.user;
 
+import com.udacity.jdnd.course3.critter.pet.Pet;
 import com.udacity.jdnd.course3.critter.pet.PetDTO;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
@@ -42,6 +43,20 @@ public class CustomerService {
     public CustomerDTO getOwnerByPet(Long petId) {
         Customer customer = customerRepository.getCustomerByPetsId(petId);
         return convertEntityToCustomerDTO(customer);
+    }
+
+    public Customer getCustomerById(Long ownerId) {
+        return customerRepository.findById(ownerId).get();
+    }
+
+    public void addPetToOwner(Pet pet, Customer customer) {
+        List<Pet> pets = customer.getPets();
+        if (pets == null) {
+            pets = new ArrayList<>();
+        }
+        pets.add(pet);
+        customer.setPets(pets);
+        customerRepository.save(customer);
     }
 
     private static List<CustomerDTO> convertEntitiesToCustomerDTOs(List<Customer> customers) {

@@ -19,7 +19,7 @@ public class Pet {
     private String name;
 
     @ManyToOne(fetch= FetchType.LAZY)
-    private Customer owner;
+    private Customer customer;
 
     private LocalDate birthDate;
 
@@ -41,12 +41,12 @@ public class Pet {
         this.name = name;
     }
 
-    public Customer getOwner() {
-        return this.owner;
+    public Customer getCustomer() {
+        return this.customer;
     }
 
-    public void setOwner(Customer customer) {
-        this.owner = customer;
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
     }
 
     public LocalDate getBirthDate() {
