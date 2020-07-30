@@ -1,7 +1,9 @@
 package com.udacity.jdnd.course3.critter.schedule;
 
 import com.udacity.jdnd.course3.critter.pet.Pet;
+import com.udacity.jdnd.course3.critter.pet.PetService;
 import com.udacity.jdnd.course3.critter.user.Employee;
+import com.udacity.jdnd.course3.critter.user.EmployeeService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,9 +18,13 @@ import java.util.List;
 public class ScheduleController {
 
     ScheduleService scheduleService;
+    EmployeeService employeeService;
+    PetService petService;
 
-    public ScheduleController(ScheduleService service) {
+    public ScheduleController(ScheduleService service, EmployeeService employeeService, PetService petService) {
         this.scheduleService = service;
+        this.employeeService = employeeService;
+        this.petService = petService;
     }
 
     @PostMapping
@@ -46,14 +52,15 @@ public class ScheduleController {
     public List<ScheduleDTO> getScheduleForCustomer(@PathVariable long customerId) {
         return convertEntitiesToScheduleDTOs(scheduleService.getScheduleByCustomer(customerId));
     }
-    private static Schedule convertScheduleDtoToEntity(ScheduleDTO scheduleDTO) {
+
+    private Schedule convertScheduleDtoToEntity(ScheduleDTO scheduleDTO) {
         Schedule schedule = new Schedule();
         BeanUtils.copyProperties(scheduleDTO, schedule);
 
         if(scheduleDTO.getEmployeeIds() != null && scheduleDTO.getEmployeeIds().size() > 0) {
             List<Employee> employees = new ArrayList<>();
             scheduleDTO.getEmployeeIds().forEach(id -> {
-                Employee employee = new Employee();
+                Employee employee = employeeService.getEmployee(id);
                 employee.setId(id);
                 employees.add(employee);
             });
@@ -64,10 +71,11 @@ public class ScheduleController {
         if(scheduleDTO.getPetIds() != null && scheduleDTO.getPetIds().size() > 0) {
             List<Pet> pets = new ArrayList<>();
             scheduleDTO.getPetIds().forEach(id -> {
-                Pet pet = new Pet();
+                Pet pet = petService.getPet(id);
                 pet.setId(id);
                 pets.add(pet);
             });
+
             schedule.setPets(pets);
         }
 
